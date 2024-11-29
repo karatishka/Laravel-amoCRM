@@ -18,6 +18,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "vee-validate": "^4.14.7",
         "vite-plugin-vuetify": "^2.0.4",
         "vuetify": "^3.7.4"
     }
