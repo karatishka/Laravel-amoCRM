@@ -14,7 +14,7 @@ const props = defineProps({
         <v-container>
 
             <v-table
-                height="300px"
+                height="1300px"
                 fixed-header
             >
                 <thead>

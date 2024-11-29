@@ -32,7 +32,19 @@ const props = defineProps({
                 <tbody>
                 <tr v-for="val in history"
                     :key="val.id">
-                    <td>{{ val.created_at }}</td>
+                    <td>{{
+                            new Date(val.created_at * 1000).toLocaleString("ru",
+                                {
+                                    second: 'numeric',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    weekday: 'long',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+
+                                })
+                        }}
+                    </td>
                     <td>{{ val.entity_type }}</td>
                     <td> {{ val.type }}</td>
                 </tr>
