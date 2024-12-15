@@ -17,17 +17,21 @@ use AmoCRM\Models\LeadModel;
 use AmoCRM\Models\NoteType\ServiceMessageNote;
 use App\Models\ContactRequest;
 
-
 class PageController extends Controller
 {
+    public AmoCRMApiClient $apiClient;
+
+    public function __construct(AmoCRMApiClient $apiClient)
+    {
+        $this->apiClient = $apiClient;
+        $longLivedAccessToken = new LongLivedAccessToken(env('AMO_LONG_TOKEN'));
+        $this->apiClient->setAccessToken($longLivedAccessToken)->setAccountBaseDomain(env('AMO_CLIENT_DOMAIN'));
+    }
+
     public function deal()
     {
-        $apiClient = new AmoCRMApiClient();
-        $longLivedAccessToken = new LongLivedAccessToken(env('AMO_LONG_TOKEN'));
-        $apiClient->setAccessToken($longLivedAccessToken)->setAccountBaseDomain(env('AMO_CLIENT_DOMAIN'));
-
         $filter = new ContactsFilter();
-        $leads = $apiClient->leads()->get($filter, [LeadModel::CONTACTS])->toArray();
+        $leads = $this->apiClient->leads()->get($filter, [LeadModel::CONTACTS])->toArray();
         return inertia('Deal', compact('leads'));
     }
 
@@ -40,13 +44,9 @@ class PageController extends Controller
     {
         $data = $request->validated();
 
-        $apiClient = new AmoCRMApiClient();
-        $longLivedAccessToken = new LongLivedAccessToken(env('AMO_LONG_TOKEN'));
-        $apiClient->setAccessToken($longLivedAccessToken)->setAccountBaseDomain(env('AMO_CLIENT_DOMAIN'));
-
         $contact = new ContactModel();
         $contact->setName($data['name']);
-        $contactModel = $apiClient->contacts()->addOne($contact);
+        $contactModel = $this->apiClient->contacts()->addOne($contact);
 
         $customFields = new CustomFieldsValuesCollection();
         $phoneField = (new MultitextCustomFieldValuesModel())->setFieldCode('PHONE');
@@ -60,14 +60,14 @@ class PageController extends Controller
                 )
         );
         $contact->setCustomFieldsValues($customFields);
-        $apiClient->contacts()->updateOne($contactModel);
+        $this->apiClient->contacts()->updateOne($contactModel);
 
-        $lead = $apiClient->leads()->getOne($id);
+        $lead = $this->apiClient->leads()->getOne($id);
 
         $links = new LinksCollection();
         $links->add($lead);
 
-        $apiClient->contacts()->link($contactModel, $links);
+        $this->apiClient->contacts()->link($contactModel, $links);
 
         $notesCollection = new NotesCollection();
         $serviceMessageNote = new ServiceMessageNote();
@@ -77,7 +77,7 @@ class PageController extends Controller
             ->setText($data['comment']);
 
         $notesCollection = $notesCollection->add($serviceMessageNote);
-        $leadNotesService = $apiClient->notes(EntityTypesInterface::CONTACTS);
+        $leadNotesService = $this->apiClient->notes(EntityTypesInterface::CONTACTS);
         $leadNotesService->add($notesCollection);
 
         return response()->json(['status' => 1]);
@@ -85,11 +85,7 @@ class PageController extends Controller
 
     public function history()
     {
-        $apiClient = new AmoCRMApiClient();
-        $longLivedAccessToken = new LongLivedAccessToken(env('AMO_LONG_TOKEN'));
-        $apiClient->setAccessToken($longLivedAccessToken)->setAccountBaseDomain(env('AMO_CLIENT_DOMAIN'));
-
-        $history = $apiClient->events()->get()->toArray();
+        $history = $this->apiClient->events()->get()->toArray();
         return inertia('History', compact('history'));
     }
 }
