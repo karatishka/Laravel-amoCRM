@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use AmoCRM\Client\AmoCRMApiClient;
-use AmoCRM\Client\LongLivedAccessToken;
 use AmoCRM\Collections\CustomFieldsValuesCollection;
 use AmoCRM\Collections\LinksCollection;
 use AmoCRM\Collections\NotesCollection;
@@ -24,8 +23,6 @@ class PageController extends Controller
     public function __construct(AmoCRMApiClient $apiClient)
     {
         $this->apiClient = $apiClient;
-        $longLivedAccessToken = new LongLivedAccessToken(env('AMO_LONG_TOKEN'));
-        $this->apiClient->setAccessToken($longLivedAccessToken)->setAccountBaseDomain(env('AMO_CLIENT_DOMAIN'));
     }
 
     public function deal()
