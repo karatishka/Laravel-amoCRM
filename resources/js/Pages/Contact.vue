@@ -1,9 +1,13 @@
 <script setup>
 import MainLayout from "@/Layouts/MainLayout.vue";
-import {Head, usePage} from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 import {useField, useForm} from 'vee-validate'
 import axios from "axios";
 import {ref} from "vue";
+
+const props = defineProps({
+    id: String,
+});
 
 const success = ref(false);
 
@@ -29,26 +33,16 @@ const name = useField('name')
 const phone = useField('phone')
 const comment = useField('comment')
 
-const submit = handleSubmit(values => {
-    axios.post(route('contact.store', {id: PageId()}), values)
-        .then(
-            success.value = true,
-            handleReset()
-        )
-        .catch(err => alert(err))
+const submit = handleSubmit(async values => {
+    try {
+        await axios.post(route('contact.store', {id: props.id}), values);
+        success.value = true;
+        handleReset();
+    } catch (err) {
+        alert(err.message);
+    }
 })
 
-const PageId = () => {
-    const parsePageId = (path) => path.substring(path.lastIndexOf('/') + 1)
-    const pageId = parsePageId(usePage().url)
-
-    const splitPathname = pageId.split("/")
-    const itemId = splitPathname[splitPathname.length - 1]
-
-    return (
-        itemId
-    )
-}
 </script>
 
 <template>
